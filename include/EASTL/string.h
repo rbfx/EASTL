@@ -132,6 +132,7 @@ EA_DISABLE_VC_WARNING(4530 4480 4571 4267 4702);
 
 #include <EASTL/internal/char_traits.h>
 #include <EASTL/string_view.h>
+#include <EASTL/vector.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // EASTL_STRING_EXPLICIT
@@ -200,15 +201,16 @@ EA_DISABLE_VC_WARNING(4530 4480 4571 4267 4702);
 		#endif
 	}
 #else
+    // replaced extern with EASTL_API to fix shared builds.
 	// User-provided functions.
-	extern int Vsnprintf8 (char*  pDestination, size_t n, const char*  pFormat, va_list arguments);
-	extern int Vsnprintf16(char16_t* pDestination, size_t n, const char16_t* pFormat, va_list arguments);
+	int EASTL_API Vsnprintf8 (char*  pDestination, size_t n, const char*  pFormat, va_list arguments);
+	int EASTL_API Vsnprintf16(char16_t* pDestination, size_t n, const char16_t* pFormat, va_list arguments);
 	extern int Vsnprintf32(char32_t* pDestination, size_t n, const char32_t* pFormat, va_list arguments);
 	#if EA_CHAR8_UNIQUE
-		extern int Vsnprintf8 (char8_t*  pDestination, size_t n, const char8_t*  pFormat, va_list arguments);
+		int EASTL_API Vsnprintf8 (char8_t*  pDestination, size_t n, const char8_t*  pFormat, va_list arguments);
 	#endif
 	#if defined(EA_WCHAR_UNIQUE) && EA_WCHAR_UNIQUE
-		extern int VsnprintfW(wchar_t* pDestination, size_t n, const wchar_t* pFormat, va_list arguments);
+		int EASTL_API VsnprintfW(wchar_t* pDestination, size_t n, const wchar_t* pFormat, va_list arguments);
 	#endif
 
 	namespace eastl
@@ -752,6 +754,161 @@ namespace eastl
 
 		bool validate() const EA_NOEXCEPT;
 		int  validate_iterator(const_iterator i) const EA_NOEXCEPT;
+
+		this_type trimmed() const
+		{
+			this_type result(*this);
+			result.trim();
+			return result;
+		}
+
+		size_type find(view_type x, size_type position = 0) const
+		{
+			return find(x.data(), position, x.length());
+		}
+
+		void replace(value_type old_value, value_type new_value)
+		{
+			eastl::replace(begin(), end(), old_value, new_value);
+		}
+
+		void replace(view_type old_value, view_type new_value)
+		{
+			size_type next = 0;
+			for (size_type start = find(old_value); start != npos; start = find(old_value, next))
+			{
+				replace(begin() + start, begin() + start + old_value.length(), new_value.begin(), new_value.end());
+				next = start + new_value.length();
+			}
+		}
+
+		this_type replaced(value_type old_value, value_type new_value) const
+		{
+			this_type result(*this);
+			result.replace(old_value, new_value);
+			return result;
+		}
+
+		this_type replaced(view_type old_value, view_type new_value) const
+		{
+			this_type result(*this);
+			result.replace(old_value, new_value);
+			return result;
+		}
+
+		static bool comparei_char(value_type c1, value_type c2)
+		{
+			return CharToLower(c1) == CharToLower(c2);
+		}
+
+		bool contains(value_type x, bool caseSensitive = true) const
+		{
+			if (caseSensitive)
+				return find(x) != npos;
+			else
+			{
+				auto predicate = [x](value_type y) { return comparei_char(x, y); };
+				return eastl::find_if(begin(), end(), predicate) != end();
+			}
+		}
+
+		bool contains(view_type x, bool caseSensitive = true) const
+		{
+			if (caseSensitive)
+				return find(x) != npos;
+			else
+				return eastl::search(begin(), end(), x.begin(), x.end(), comparei_char) != end();
+		}
+
+		bool starts_with(const view_type& substring, bool caseSensitive = true) const
+		{
+			if (substring.length() > length())
+				return false;
+			else if (caseSensitive)
+				return compare(begin(), begin() + substring.length(), substring.begin(), substring.end()) == 0;
+			else
+				return comparei(begin(), begin() + substring.length(), substring.begin(), substring.end()) == 0;
+		}
+
+		bool ends_with(const view_type& substring, bool caseSensitive = true) const
+		{
+			if (substring.length() > length())
+				return false;
+			else if (caseSensitive)
+				return compare(end() - substring.length(), end(), substring.begin(), substring.end()) == 0;
+			else
+				return comparei(end() - substring.length(), end(), substring.begin(), substring.end()) == 0;
+		}
+
+		this_type to_lower() const
+		{
+			this_type result(*this);
+			result.make_lower();
+			return result;
+		}
+
+		this_type to_upper() const
+		{
+			this_type result(*this);
+			result.make_upper();
+			return result;
+		}
+
+		static eastl::vector<this_type> split(view_type v, view_type separator, bool keepEmptyStrings = false)
+		{
+			eastl::vector<this_type> ret;
+
+			size_type start = 0;
+			size_type end = v.find(separator);
+			while (end != npos)
+			{
+				view_type token = v.substr(start, end - start);
+				if (keepEmptyStrings || !token.empty())
+					ret.push_back(this_type(token));
+				start = end + separator.length();
+				end = v.find(separator, start);
+			}
+
+			view_type token = v.substr(start, end);
+			if (keepEmptyStrings || !token.empty())
+				ret.push_back(this_type(token));
+
+			return ret;
+		}
+
+		static eastl::vector<this_type> split(view_type v, value_type separator, bool keepEmptyStrings = false)
+		{
+			return split(v, view_type(&separator, 1), keepEmptyStrings);
+		}
+
+		eastl::vector<this_type> split(view_type separator, bool keepEmptyStrings = false) const
+		{
+			return split(*this, separator, keepEmptyStrings);
+		}
+
+		eastl::vector<this_type> split(value_type separator, bool keepEmptyStrings = false) const
+		{
+			return split(*this, separator, keepEmptyStrings);
+		}
+
+		/// Return a string by joining substrings with a 'glue' string.
+		static this_type joined(const eastl::vector<this_type>& subStrings, const this_type& glue)
+		{
+			if (subStrings.empty())
+				return this_type();
+
+			size_type result_size = (subStrings.size() - 1) * glue.length();
+			for (const auto& sub : subStrings)
+				result_size += sub.length();
+
+			this_type joinedString;
+			joinedString.reserve(result_size);
+			joinedString.append(subStrings[0]);
+			for (unsigned i = 1; i < subStrings.size(); ++i)
+				joinedString.append(glue).append(subStrings[i]);
+
+			return joinedString;
+		}
 
 
 	protected:
@@ -4083,8 +4240,7 @@ namespace eastl
 	///    #include <EASTL/hash_set.h>
 	///    hash_set<string> stringHashSet;
 	///
-	template <typename T> struct hash;
-
+	template <typename T, typename Enable> struct hash;
 	template <>
 	struct hash<string>
 	{

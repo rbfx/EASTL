@@ -20,6 +20,7 @@
 #include <EASTL/algorithm.h>
 #include <EASTL/initializer_list.h>
 #include <EASTL/tuple.h>
+#include <EASTL/vector.h>
 
 EA_DISABLE_ALL_VC_WARNINGS()
 #include <new>
@@ -561,6 +562,28 @@ namespace eastl
 		bool validate() const;
 		int  validate_iterator(const_iterator i) const;
 
+		bool contains(const key_type& key) const
+		{
+			return find(key) != end();
+		}
+
+		eastl::vector<key_type> keys() const
+		{
+			eastl::vector<key_type> result{};
+			result.reserve(size());
+			for (const auto& pair : *this)
+				result.emplace_back(pair.first);
+			return result;
+		}
+
+		eastl::vector<key_type> values() const
+		{
+			eastl::vector<key_type> result{};
+			result.reserve(size());
+			for (const auto& pair : *this)
+				result.emplace_back(pair.second);
+			return result;
+		}
 	protected:
 		node_type* DoAllocateNode();
 		void       DoFreeNode(node_type* pNode);
@@ -621,14 +644,14 @@ namespace eastl
 	// rbtree_node_base functions
 	///////////////////////////////////////////////////////////////////////
 
-	EASTL_API inline rbtree_node_base* RBTreeGetMinChild(const rbtree_node_base* pNodeBase)
+	/*EASTL_API*/ inline rbtree_node_base* RBTreeGetMinChild(const rbtree_node_base* pNodeBase)
 	{
 		while(pNodeBase->mpNodeLeft) 
 			pNodeBase = pNodeBase->mpNodeLeft;
 		return const_cast<rbtree_node_base*>(pNodeBase);
 	}
 
-	EASTL_API inline rbtree_node_base* RBTreeGetMaxChild(const rbtree_node_base* pNodeBase)
+	/*fix EASTL_API*/ inline rbtree_node_base* RBTreeGetMaxChild(const rbtree_node_base* pNodeBase)
 	{
 		while(pNodeBase->mpNodeRight) 
 			pNodeBase = pNodeBase->mpNodeRight;

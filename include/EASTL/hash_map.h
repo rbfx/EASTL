@@ -125,8 +125,20 @@ namespace eastl
 		///
 		/// Default constructor.
 		///
-		explicit hash_map(const allocator_type& allocator = EASTL_HASH_MAP_DEFAULT_ALLOCATOR)
-			: base_type(0, Hash(), mod_range_hashing(), default_ranged_hash(), 
+		hash_map()
+			: base_type(0, Hash(), mod_range_hashing(), default_ranged_hash(),
+						Predicate(), eastl::use_first<eastl::pair<const Key, T> >(), EASTL_HASH_MAP_DEFAULT_ALLOCATOR)
+		{
+			// Empty
+		}
+
+
+		/// hash_map
+		///
+		/// Default constructor.
+		///
+		explicit hash_map(const allocator_type& allocator)
+			: base_type(0, Hash(), mod_range_hashing(), default_ranged_hash(),
 						Predicate(), eastl::use_first<eastl::pair<const Key, T> >(), allocator)
 		{
 			// Empty
@@ -309,6 +321,16 @@ namespace eastl
 			// Currently, `hint` is ignored.
 			insert_return_type result = try_emplace(eastl::move(k), eastl::forward<Args>(args)...);
 			return base_type::DoGetResultIterator(true_type(), result);
+		}
+
+		/// Extract values from the map
+		eastl::vector<mapped_type> values() const
+		{
+			eastl::vector<mapped_type> result{};
+			result.reserve(this->size());
+			for (const auto& pair : *this)
+				result.emplace_back(pair.second);
+			return result;
 		}
 
 	private:

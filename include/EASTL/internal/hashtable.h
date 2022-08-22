@@ -41,6 +41,7 @@
 #include <EASTL/algorithm.h>
 #include <EASTL/initializer_list.h>
 #include <EASTL/tuple.h>
+#include <EASTL/vector.h>
 #include <string.h>
 
 EA_DISABLE_ALL_VC_WARNINGS()
@@ -1170,6 +1171,20 @@ namespace eastl
 
 		bool validate() const;
 		int  validate_iterator(const_iterator i) const;
+
+		bool contains(const key_type& key) const
+		{
+			return find(key) != end();
+		}
+
+		eastl::vector<key_type> keys() const
+		{
+			eastl::vector<key_type> result{};
+			result.reserve(size());
+			for (const auto& elem : *this)
+				result.emplace_back(mExtractKey(elem));
+			return result;
+		}
 
 	protected:
 		// We must remove one of the 'DoGetResultIterator' overloads from the overload-set (via SFINAE) because both can

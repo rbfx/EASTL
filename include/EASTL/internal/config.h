@@ -282,8 +282,13 @@ namespace eastl
 
 #ifndef EASTL_API // If the build file hasn't already defined this to be dllexport...
 	#if EASTL_DLL
-		#if defined(_MSC_VER)
-			#define EASTL_API      __declspec(dllimport)
+		// rbfx customization.
+		#if defined(_WIN32)
+			#if defined(EASTL_EXPORTS)
+				#define EASTL_API      __declspec(dllexport)
+			#else
+				#define EASTL_API      __declspec(dllimport)
+			#endif
 			#define EASTL_LOCAL
 		#elif defined(__CYGWIN__)
 			#define EASTL_API      __attribute__((dllimport))
@@ -309,8 +314,13 @@ namespace eastl
 //
 #ifndef EASTL_EASTDC_API
 	#if EASTL_DLL
-		#if defined(_MSC_VER)
-			#define EASTL_EASTDC_API      __declspec(dllimport)
+		// rbfx customization.
+		#if defined(_WIN32)
+			#if defined(EASTL_EXPORTS)
+				#define EASTL_EASTDC_API      __declspec(dllexport)
+			#else
+				#define EASTL_EASTDC_API      __declspec(dllimport)
+			#endif
 			#define EASTL_EASTDC_LOCAL
 		#elif defined(__CYGWIN__)
 			#define EASTL_EASTDC_API      __attribute__((dllimport))
@@ -648,6 +658,9 @@ namespace eastl
 			#define EASTL_DEBUG_BREAK() { __asm int 3 }
 		#elif (defined(EA_PROCESSOR_X86) || defined(EA_PROCESSOR_X86_64)) && (defined(EA_ASM_STYLE_ATT) || defined(__GNUC__))
 			#define EASTL_DEBUG_BREAK() asm("int3")
+		#elif defined(EA_PLATFORM_POSIX)
+			#include <signal.h>
+			#define EASTL_DEBUG_BREAK() raise(SIGTRAP)  // rbfx
 		#else
 			void EASTL_DEBUG_BREAK(); // User must define this externally.
 		#endif
@@ -1895,6 +1908,6 @@ typedef EASTL_SSIZE_T eastl_ssize_t; // Signed version of eastl_size_t. Concept 
 	#define EASTL_CONSTEXPR_BIT_CAST_SUPPORTED 0
 #endif
 
-
+namespace ea = eastl;
 
 #endif // Header include guard

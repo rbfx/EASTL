@@ -312,6 +312,70 @@ namespace eastl
 		bool validate() const EA_NOEXCEPT;
 		int  validate_iterator(const_iterator i) const EA_NOEXCEPT;
 
+		iterator insert_at(size_type position, const value_type& value)
+		{
+			position = eastl::min(position, size());
+			return insert(begin() + position, value);
+		}
+
+		iterator insert_at(size_type position, value_type&& value)
+		{
+			position = eastl::min(position, size());
+			return insert(begin() + position, eastl::move(value));
+		}
+
+		const_iterator find(const value_type& value) const EA_NOEXCEPT
+		{
+			return eastl::find(cbegin(), cend(), value);
+		}
+
+		iterator find(const value_type& value) EA_NOEXCEPT
+		{
+			return eastl::find(begin(), end(), value);
+		}
+
+		bool contains(const value_type& value) const EA_NOEXCEPT
+		{
+			return find(value) != end();
+		}
+
+		iterator push_front(const value_type& value)
+		{
+			return insert(begin(), value);
+		}
+
+		iterator pop_front()
+		{
+			if (!empty())
+				return erase(begin());
+			return end();
+		}
+
+		iterator erase_at(size_type position)
+		{
+			if (position >= size())
+				return end();
+			return erase(begin() + position);
+		}
+
+		iterator erase_at(size_type position, size_type length)
+		{
+			if (position >= size())
+				return end();
+			length = eastl::min(size() - position, length);
+			return erase(begin() + position, begin() + position + length);
+		}
+
+		size_type index_of(const value_type& value) const
+		{
+			return eastl::distance(cbegin(), find(value));
+		}
+
+		iterator append(const this_type& value)
+		{
+			return insert(end(), value.begin(), value.end());
+		}
+
 	protected:
 		// These functions do the real work of maintaining the vector. You will notice
 		// that many of them have the same name but are specialized on iterator_tag

@@ -730,8 +730,7 @@ namespace eastl
 	///    #include <EASTL/hash_set.h>
 	///    hash_set<string_view> stringHashSet;
 	///
-	template <typename T> struct hash;
-
+	template <typename T, typename Enable> struct hash;
 	template<> struct hash<string_view>
 	{
 		size_t operator()(const string_view& x) const

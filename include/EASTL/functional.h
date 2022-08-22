@@ -994,7 +994,14 @@ namespace eastl
 	///////////////////////////////////////////////////////////////////////
 	// hash
 	///////////////////////////////////////////////////////////////////////
-	namespace Internal
+	template <typename T, typename Enable = void> struct hash;
+
+	template <typename T>
+	struct hash<T, typename enable_if<is_enum_v<T>>::type>
+	{
+		size_t operator()(T p) const { return size_t(p); }
+	};
+	/*namespace Internal
 	{
 		// utility to disable the generic template specialization that is
 		// used for enum types only.
@@ -1012,7 +1019,7 @@ namespace eastl
 	template <typename T> struct hash;
 
 	template <typename T>
-	struct hash : Internal::EnableHashIf<T, is_enum_v<T>> {};
+	struct hash : Internal::EnableHashIf<T, is_enum_v<T>> {};*/
 
 	template <typename T> struct hash<T*> // Note that we use the pointer as-is and don't divide by sizeof(T*). This is because the table is of a prime size and this division doesn't benefit distribution.
 		{ size_t operator()(T* p) const { return size_t(uintptr_t(p)); } };
