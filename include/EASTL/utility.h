@@ -84,6 +84,8 @@ namespace eastl
 
 		// We declare this version of 'eastl::swap' to make compile-time existance checks for swap functions possible.  
 		//
+		namespace Internal  // this creates ambiguity in some cases
+		{
 		#if EASTL_VARIADIC_TEMPLATES_ENABLED
 			eastl::unused swap(eastl::argument_sink, eastl::argument_sink);
 		#else
@@ -92,10 +94,10 @@ namespace eastl
 			// accept the parameters by reference.
 			eastl::unused swap(eastl::argument_sink&, eastl::argument_sink&);
 		#endif
-
+		}
 		template <typename T>
 		struct is_swappable
-			: public integral_constant<bool, !eastl::is_same<decltype(swap(eastl::declval<T&>(), eastl::declval<T&>())), eastl::unused>::value> {}; // Don't prefix swap with eastl:: as we want to allow user-defined swaps via argument-dependent lookup.
+			: public integral_constant<bool, !eastl::is_same<decltype(Internal::swap(eastl::declval<T&>(), eastl::declval<T&>())), eastl::unused>::value> {}; // Don't prefix swap with eastl:: as we want to allow user-defined swaps via argument-dependent lookup.
 	#endif
 	
 	#if EASTL_VARIABLE_TEMPLATES_ENABLED
@@ -793,14 +795,14 @@ namespace eastl
 	//   eastl::pair<int, eastl::string> pair3(myInt, myCStr);
 	//
 #if defined(_MSC_VER)
-	template <typename T1, typename T2, typename DeduceT1, typename DeduceT2>
-	EASTL_REMOVE_AT_2024_SEPT EA_CPP14_CONSTEXPR inline pair<T1, T2> make_pair(
-		const DeduceT1& a,
-		const DeduceT2& b,
-		typename eastl::enable_if<!eastl::is_array<T1>::value && !eastl::is_array<T2>::value>::type* = 0)
-	{
-		return eastl::pair<T1, T2>(a, b);
-	}
+	//template <typename T1, typename T2, typename DeduceT1, typename DeduceT2>
+	//EASTL_REMOVE_AT_2024_SEPT EA_CPP14_CONSTEXPR inline pair<T1, T2> make_pair(
+	//	const DeduceT1& a,
+	//	const DeduceT2& b,
+	//	typename eastl::enable_if<!eastl::is_array<T1>::value && !eastl::is_array<T2>::value>::type* = 0)
+	//{
+	//	return eastl::pair<T1, T2>(a, b);
+	//}
 #endif
 
 	// use make_pair() instead. they are equivalent.

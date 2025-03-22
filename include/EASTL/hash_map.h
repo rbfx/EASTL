@@ -346,6 +346,16 @@ namespace eastl
 			return base_type::DoGetResultIterator(true_type(), result);
 		}
 
+		/// Extract values from the map
+		eastl::vector<mapped_type> values() const
+		{
+			eastl::vector<mapped_type> result{};
+			result.reserve(this->size());
+			for (const auto& pair : *this)
+				result.emplace_back(pair.second);
+			return result;
+		}
+
 	private:
 		template <class K, class... Args>
 		insert_return_type try_emplace_forwarding(K&& k, Args&&... args)

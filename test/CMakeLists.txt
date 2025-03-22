@@ -76,8 +76,8 @@ target_include_directories(EASTLTest PUBLIC include)
 #-------------------------------------------------------------------------------------------
 FetchContent_Declare(
   EABase
-  GIT_REPOSITORY https://github.com/electronicarts/EABase.git
-  GIT_TAG        123363eb82e132c0181ac53e43226d8ee76dea12
+  GIT_REPOSITORY https://github.com/rbfx/EABase.git
+  GIT_TAG        12b523c5f690b43fd6a61bd6a1bc437faf80fae7
   GIT_SUBMODULES "" # This should be temporary until we update the cyclic submodule dependencies in EABase.
 )
 FetchContent_MakeAvailable(EABase)
@@ -94,8 +94,8 @@ target_link_libraries(EASTLTest EAAssert)
 
 FetchContent_Declare(
   EAStdC
-  GIT_REPOSITORY https://github.com/electronicarts/EAStdC.git
-  GIT_TAG        fbcc34e89c63636054334888f3a5bd7ac2fd4b76
+  GIT_REPOSITORY https://github.com/rbfx/EAStdC.git
+  GIT_TAG        0f42e67796e8314327030291fe391b7399651ba4
   GIT_SUBMODULES "" # This should be temporary until we update the cyclic submodule dependencies in EAStdC.
 )
 FetchContent_MakeAvailable(EAStdC)

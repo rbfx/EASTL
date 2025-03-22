@@ -84,6 +84,8 @@ namespace eastl
 		// iterator_traits<T>::iterator_category as random_access_iterator_tag and thus users must
 		// explicitly check both the iterator_category and the type.
 		struct contiguous_iterator_tag    : public random_access_iterator_tag { };
+    #else
+        struct contiguous_iterator_tag    : public std::random_access_iterator_tag { };  // Fix builds with EASTL_STD_ITERATOR_CATEGORY_ENABLED
 	#endif
 
 
